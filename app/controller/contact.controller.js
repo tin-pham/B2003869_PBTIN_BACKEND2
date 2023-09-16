@@ -39,3 +39,66 @@ exports.findAll = async (req, res, next) => {
 
   return res.send(documents);
 };
+
+exports.findOne = async (req, res, next) => {
+  try {
+    const contactService = new ContactService(MongoDB.client);
+    const document = await contactService.findById(req.params.id);
+    if (!document) {
+      return next(new ApiError(404, 'Contact not found'));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(
+      new ApiError(500, 'An error occurred while retrieving contact'),
+    );
+  }
+};
+
+exports.update = async (req, res, next) => {
+  if (Object.keys(req.body).length === 0) {
+    return next(new ApiError(400, 'Data to update cannot be empty'));
+  }
+
+  try {
+    const contactService = new ContactService(MongoDB.client);
+    const document = await contactService.update(req.params.id, req.body);
+    if (!document) {
+      return next(new ApiError(404, 'Contact not found'));
+    }
+    return res.send({ message: 'Contact was updated successfully' });
+  } catch (error) {
+    return next(new ApiError(500, 'An error occurred while updating contact'));
+  }
+};
+
+exports.delete = async (req, res, next) => {
+  try {
+    const contactService = new ContactService(MongoDB.client);
+    const document = await contactService.delete(req.params.id);
+    if (!document) {
+      return next(new ApiError(404, 'Contact not found'));
+    }
+    return res.send({ message: 'Contact was deleted successfully' });
+  } catch (error) {
+    return next(new ApiError(500, 'An error occurred while deleting contact'));
+  }
+};
+
+exports.findAllFavorite = async (req, res, next) => {
+  try {
+    const contactService = new ContactService(MongoDB.client);
+    const documents = await contactService.findFavorite();
+    return res.send(documents);
+  } catch (error) {
+    return next(
+      new ApiError(500, 'An error occurred while retrieving favorite contacts'),
+    );
+  }
+};
+
+exports.deleteAll = async (req, res, next) => {
+  const contactService = new ContactService(MongoDB.client);
+   await contactService.deleteAll();
+  return res.sendStatus(200);
+};
